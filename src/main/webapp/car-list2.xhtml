@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:adm="http://github.com/adminfaces"
+                template="#{layoutMB.template}">
+    
+    <ui:define name="metadata">
+        <ui:param name="title" value="Car listing"/> <!-- Automatic create breadCrumb and page title when param 'title' is provided. --> 
+        
+        <style type="text/css">
+            .ui-datatable .ui-datatable-header {
+                text-align: right !important;
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="description">
+        Find cars by name, price and model
+    </ui:define>
+
+    <ui:define name="body">
+    
+        <adm:breadcrumb title="Datatable"/>
+        <p:panel styleClass="card box-info" header="Datatable">
+            <h:form prependId="false">
+
+                <div id="datatable">
+                    <p:dataTable var="car" value="#{datatableMB.cars}" widgetVar="carsTable" paginator="true" styleClass="header-right"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15" rows="10" rowKey="#{car.id}"
+                                 emptyMessage="No cars found with given criteria" stickyHeader="true"
+                                 filteredValue="#{datatableMB.filteredCars}">
+
+                        <f:facet name="header">
+                            <p:outputPanel>
+                                <h:outputText value="Search all fields:"/>
+                                <p:spacer height="10"/>
+                                <p:inputText id="globalFilter" onkeyup="PF('carsTable').filter()" style="width:150px"
+                                             placeholder="Enter keyword"/>
+                            </p:outputPanel>
+                        </f:facet>
+
+                        <p:column width="5%" selectionMode="multiple"
+                                  styleClass="align-center"
+                                  priority="1"/>
+
+                        <p:column filterBy="#{car.id}" sortBy="#{car.id}" headerText="Id" footerText="contains"
+                                  filterMatchMode="contains" priority="1">
+                            <p:link value="#{car.id}" outcome="/index.xhtml">
+                                <f:param name="id" value="#{car.id}"/>
+                            </p:link>
+                        </p:column>
+
+                        <p:column filterBy="#{car.year}" sortBy="#{car.year}" headerText="Year" footerText="lte" filterMatchMode="lte"
+                                  priority="2">
+                            <f:facet name="filter">
+                                <p:calendar pattern="yyyy" showOn="both" yearRange="c-60:c+0" navigator="true">
+                                    <!-- f:converter converterId="calendarYearConverter"/-->
+                                    <p:ajax process="@this" event="change" oncomplete="PF('carsTable').filter()"/>
+                                    <p:ajax process="@this" event="dateSelect" oncomplete="PF('carsTable').filter()"/>
+                                </p:calendar>
+                            </f:facet>
+                            <h:outputText value="#{car.year}"/>
+                        </p:column>
+
+                        <p:column filterBy="#{car.brand}" headerText="Brand" footerText="exact" filterMatchMode="exact"
+                                  priority="2">
+                            <f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('carsTable').filter()">
+                                    <f:selectItem itemLabel="Select One" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{datatableMB.brands}"/>
+                                </p:selectOneMenu>
+                            </f:facet>
+                            <h:outputText value="#{car.brand}"/>
+                        </p:column>
+
+                        <p:column filterBy="#{car.color}" headerText="Color" footerText="in" filterMatchMode="in"
+                                  priority="3">
+                            <f:facet name="filter">
+                                <p:selectCheckboxMenu label="Colors" onchange="PF('carsTable').filter()"
+                                                      panelStyle="width:125px" scrollHeight="150">
+                                    <f:selectItems value="#{datatableMB.colors}"/>
+                                </p:selectCheckboxMenu>
+                            </f:facet>
+                            <h:outputText value="#{car.color}"/>
+                        </p:column>
+
+                        <p:column filterBy="#{car.sold}" headerText="Status" footerText="equals"
+                                  filterMatchMode="equals"
+                                  priority="3">
+                            <f:facet name="filter">
+                                <p:selectOneButton onchange="PF('carsTable').filter()">
+                                    <f:converter converterId="javax.faces.Boolean"/>
+                                    <f:selectItem itemLabel="All" itemValue=""/>
+                                    <f:selectItem itemLabel="Sold" itemValue="true"/>
+                                    <f:selectItem itemLabel="Sale" itemValue="false"/>
+                                </p:selectOneButton>
+                            </f:facet>
+                            <h:outputText value="#{car.sold ? 'Sold': 'Sale'}"/>
+                        </p:column>
+
+                        <p:column filterBy="#{car.price}" headerText="Price" footerText="custom (min)"
+                                  filterFunction="#{datatableMB.filterByPrice}" priority="2">
+                            <h:outputText value="#{car.price}">
+                                <f:convertNumber currencySymbol="$" type="currency"/>
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+                <p:spacer/>
+
+            </h:form>
+        </p:panel>
+
+       
+    </ui:define>
+</ui:composition>
